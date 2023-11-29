@@ -11,12 +11,16 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/components/ui/use-toast";
 import { SignupValidation } from "@/lib/validation";
 import Loader from "@/components/shared/Loader";
 import { Link } from "react-router-dom";
+import { createUserAccount } from "@/lib/apwrite/api/auth";
 
 const SignupForm = () => {
   const isLoading = false;
+  const { toast } = useToast();
+
   // 1. Define your form.
   const form = useForm<z.infer<typeof SignupValidation>>({
     resolver: zodResolver(SignupValidation),
@@ -30,8 +34,20 @@ const SignupForm = () => {
 
   // 2. Define a submit handler.
   async function onSubmit(values: z.infer<typeof SignupValidation>) {
-      // Create the user account
-      // const newUser = await createUserAccount(values);
+    // Create the user account
+    const newUser = await createUserAccount(values);
+
+    if (!newUser) {
+      toast({
+        variant: "destructive",
+        title: "Sign up failed!",
+        description: "Please try again later.",
+      });
+    }
+    toast({
+      title: "Scheduled: Catch up",
+      description: "Friday, February 10, 2023 at 5:57 PM",
+    });
   }
 
   return (
