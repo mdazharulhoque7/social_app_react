@@ -15,11 +15,19 @@ import { useToast } from "@/components/ui/use-toast";
 import { SignupValidation } from "@/lib/validation";
 import Loader from "@/components/shared/Loader";
 import { Link } from "react-router-dom";
-import { createUserAccount } from "@/lib/apwrite/api/auth";
+import {
+  useCreateUserAccount,
+  useSignInAccount,
+} from "@/lib/react-query/queriesAndMutations";
 
 const SignupForm = () => {
-  const isLoading = false;
   const { toast } = useToast();
+
+  const { mutateAsync: createUserAccount, isLoading: isCreatingUser } =
+    useCreateUserAccount();
+
+  const { mutateAsync: signInAccount, isLoading: isSigningIn } =
+    useSignInAccount();
 
   // 1. Define your form.
   const form = useForm<z.infer<typeof SignupValidation>>({
@@ -38,23 +46,37 @@ const SignupForm = () => {
     const newUser = await createUserAccount(values);
 
     if (!newUser) {
-      toast({
+      return toast({
         variant: "destructive",
         title: "Sign up failed!",
         description: "Please try again later.",
       });
+    } else {
+      toast({
+        title: "Sign up Successful",
+        description: `${values.name} has been registerd.`,
+      });
+
+      const session = await signInAccount({
+        email: values.email,
+        password: values.password,
+      });
+
+      if (!session) {
+        return toast({
+          variant: "destructive",
+          title: "Sign in failed!",
+          description: "Please try again later.",
+        });
+      }
     }
-    toast({
-      title: "Scheduled: Catch up",
-      description: "Friday, February 10, 2023 at 5:57 PM",
-    });
   }
 
   return (
     <Form {...form}>
-      <div className="sm:w-420 flex-center flex-col">
+      <div className="flex-col sm:w-420 flex-center">
         <img src="assets/images/logo.svg" alt="logo" />
-        <h2 className="h3-bold md:h2-bold pt-5 sm:pt-12">
+        <h2 className="pt-5 h3-bold md:h2-bold sm:pt-12">
           Create a new account
         </h2>
         <p className="text-light-3 small-medium md:base-regular">
@@ -63,7 +85,7 @@ const SignupForm = () => {
 
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="flex flex-col gap-5 w-full mt-4"
+          className="flex flex-col w-full gap-5 mt-4"
         >
           <FormField
             control={form.control}
@@ -124,19 +146,19 @@ const SignupForm = () => {
             )}
           />
           <Button type="submit" className="shad-button_primary">
-            {isLoading ? (
-              <div className="flex-center gap-2">
+            {isCreatingUser ? (
+              <div className="gap-2 flex-center">
                 <Loader />
               </div>
             ) : (
               "Sign up"
             )}
           </Button>
-          <p className="text-small-regular text-light-2 text-center mt-2">
+          <p className="mt-2 text-center text-small-regular text-light-2">
             Already have an account?
             <Link
               to="/sign-in"
-              className="text-primary-500 text-small-semibold ml-1"
+              className="ml-1 text-primary-500 text-small-semibold"
             >
               Log In
             </Link>
