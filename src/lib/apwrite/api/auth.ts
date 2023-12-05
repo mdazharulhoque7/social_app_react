@@ -2,6 +2,7 @@ import { ID, Query } from "appwrite";
 import { INewUser } from "@/types";
 import { account, avatars, databases } from "@/lib/apwrite/config";
 import conf from "@/_conf/conf";
+import { log } from "console";
 
 export async function createUserAccount(user: INewUser) {
   try {
@@ -74,6 +75,15 @@ export async function getCurrentUser() {
 
     if (!currentUser) throw Error;
     return currentUser.documents[0];
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function signOutAccount() {
+  try {
+    const session = await account.deleteSession("current");
+    return session;
   } catch (error) {
     console.log(error);
   }
