@@ -1,3 +1,14 @@
+import React from "react";
+
+export type IContextType = {
+  user: IUser;
+  isLoading: boolean;
+  setUser: React.Dispatch<React.SetStateAction<IUser>>;
+  isAuthenticated: boolean;
+  setIsAuthenticated: React.Dispatch<React.SetStateAction<boolean>>;
+  checkAuthUser: () => Promise<boolean>;
+};
+
 export type INavLink = {
   imgURL: string;
   route: string;
@@ -9,7 +20,7 @@ export type IUpdateUser = {
   name: string;
   bio: string;
   imageId: string;
-  imageUrl: URL | string;
+  imageURL: URL | string;
   file: File[];
 };
 
@@ -25,7 +36,7 @@ export type IUpdatePost = {
   postId: string;
   caption: string;
   imageId: string;
-  imageUrl: URL;
+  imageURL: URL;
   file: File[];
   location?: string;
   tags?: string;
@@ -36,7 +47,7 @@ export type IUser = {
   name: string;
   username: string;
   email: string;
-  imageUrl: string;
+  imageURL: string;
   bio: string;
 };
 

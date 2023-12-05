@@ -1,4 +1,4 @@
-import { ID } from "appwrite";
+import { ID, Query } from "appwrite";
 import { INewUser } from "@/types";
 import { account, avatars, databases } from "@/lib/apwrite/config";
 import conf from "@/_conf/conf";
@@ -55,6 +55,25 @@ export async function signInAccount(user: { email: string; password: string }) {
   try {
     const session = await account.createEmailSession(user.email, user.password);
     return session;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function getCurrentUser() {
+  try {
+    const currentAccount = await account.get();
+
+    if (!currentAccount) throw Error;
+
+    const currentUser = await databases.listDocuments(
+      conf.appwriteDatabaseId,
+      conf.appwriteUserCollectionId,
+      [Query.equal("accountId", currentAccount.$id)]
+    );
+
+    if (!currentUser) throw Error;
+    return currentUser.documents[0];
   } catch (error) {
     console.log(error);
   }
