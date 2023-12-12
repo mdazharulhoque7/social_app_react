@@ -1,4 +1,4 @@
-import { ID } from "appwrite";
+import { ID, Query } from "appwrite";
 import conf from "@/_conf/conf";
 import { INewPost } from "@/types";
 import { database } from "../config";
@@ -40,6 +40,67 @@ export async function createPost(post: INewPost) {
       throw Error;
     }
     return newPost;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+// Getting Recent Posts
+export async function getRecentPosts() {
+  const posts = await database.listDocuments(
+    conf.appwriteDatabaseId,
+    conf.appwritePostCollectionId,
+    [Query.orderDesc("$createdAt"), Query.limit(20)]
+  );
+
+  if (!posts) throw Error;
+  return posts;
+}
+
+export async function likePost(postId: string, likesArray: string[]) {
+  try {
+    const updatedPost = await database.updateDocument(
+      conf.appwriteDatabaseId,
+      conf.appwritePostCollectionId,
+      postId,
+      {
+        likes: likesArray,
+      }
+    );
+    if (!updatedPost) throw Error;
+    return updatedPost;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function savePost(postId: string, userId: string) {
+  try {
+    const updatedPost = await database.createDocument(
+      conf.appwriteDatabaseId,
+      conf.appwriteSaveCollectionId,
+      ID.unique(),
+      {
+        user: userId,
+        post: postId,
+      }
+    );
+    if (!updatedPost) throw Error;
+    return updatedPost;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function deleteSavedPost(savedPostId: string) {
+  try {
+    const status = await database.deleteDocument(
+      conf.appwriteDatabaseId,
+      conf.appwriteSaveCollectionId,
+      savedPostId
+    );
+    if (!status) throw Error;
+    return { status: "Ok" };
   } catch (error) {
     console.log(error);
   }
