@@ -1,8 +1,7 @@
 import { ID, Query } from "appwrite";
 import { INewUser } from "@/types";
-import { account, avatars, databases } from "@/lib/apwrite/config";
+import { account, avatars, database } from "@/lib/apwrite/config";
 import conf from "@/_conf/conf";
-import { log } from "console";
 
 export async function createUserAccount(user: INewUser) {
   try {
@@ -40,7 +39,7 @@ export async function createUser(user: {
   accountID: string;
 }) {
   try {
-    const newUser = await databases.createDocument(
+    const newUser = await database.createDocument(
       conf.appwriteDatabaseId,
       conf.appwriteUserCollectionId,
       ID.unique(),
@@ -64,10 +63,9 @@ export async function signInAccount(user: { email: string; password: string }) {
 export async function getCurrentUser() {
   try {
     const currentAccount = await account.get();
-    console.log("curent account", currentAccount);
     if (!currentAccount) throw Error;
 
-    const currentUser = await databases.listDocuments(
+    const currentUser = await database.listDocuments(
       conf.appwriteDatabaseId,
       conf.appwriteUserCollectionId,
       [Query.equal("accountID", currentAccount.$id)]

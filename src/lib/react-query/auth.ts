@@ -1,15 +1,10 @@
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-  useInfiniteQuery,
-} from "@tanstack/react-query";
+import { INewUser } from "@/types";
+import { useMutation } from "@tanstack/react-query";
 import {
   createUserAccount,
   signInAccount,
   signOutAccount,
 } from "../apwrite/api/auth";
-import { INewUser } from "@/types";
 
 export const useCreateUserAccount = () => {
   return useMutation({
