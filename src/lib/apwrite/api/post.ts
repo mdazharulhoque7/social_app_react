@@ -81,7 +81,7 @@ export async function savePost(postId: string, userId: string) {
       conf.appwriteSaveCollectionId,
       ID.unique(),
       {
-        user: userId,
+        users: userId,
         post: postId,
       }
     );
