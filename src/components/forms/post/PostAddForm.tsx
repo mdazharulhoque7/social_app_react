@@ -15,18 +15,26 @@ import FileUploader from "@/components/shared/FileUploader";
 import { Input } from "@/components/ui/input";
 import { CreatePostValidation } from "@/lib/validation";
 import { Models } from "appwrite";
-import { useCreatePost } from "@/lib/react-query/post";
+import { useCreatePost, useUpdatePost } from "@/lib/react-query/post";
 import { useAuthContext } from "@/context/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
+import { updatePost } from "@/lib/apwrite/api/post";
 
 type PostFormProps = {
   post?: Models.Document;
+  action: "Create" | "Update";
 };
 
-const PostAddForm = ({ post }: PostFormProps) => {
+const PostAddForm = ({ post, action }: PostFormProps) => {
+  // Mutation for create post
   const { mutateAsync: createPost, isPending: isLoadingCreate } =
     useCreatePost();
+
+  // Mutation for Update post
+  const { mutateAsync: updatePost, isPending: isLoadingUpdate } =
+    useUpdatePost();
+
   const { user } = useAuthContext();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -44,12 +52,26 @@ const PostAddForm = ({ post }: PostFormProps) => {
 
   // 2. Define a submit handler.
   async function onSubmit(values: z.infer<typeof CreatePostValidation>) {
+    // if post is updating
+    if (post && action === "Update") {
+      const updatedPost = await updatePost({
+        ...values,
+        postId: post.$id,
+        imageId: post?.imageId,
+        imageURL: post?.imageUrl,
+      });
+
+      if (!updatedPost) {
+        toast({ variant: "destructive", title: "Please try again later" });
+      }
+      return navigate(`/post/${post.$id}`);
+    }
     const newPost = await createPost({
       ...values,
       userId: user.id,
     });
     if (!newPost) {
-      toast({ title: "Please try again later." });
+      toast({ variant: "destructive", title: "Please try again later." });
     }
     navigate("/");
   }
@@ -85,7 +107,7 @@ const PostAddForm = ({ post }: PostFormProps) => {
               <FormControl>
                 <FileUploader
                   fieldChange={field.onChange}
-                  mediaURL={post?.mediaURL}
+                  mediaURL={post?.imageURL}
                 />
               </FormControl>
               <FormMessage className="shad-form_message" />
@@ -132,8 +154,10 @@ const PostAddForm = ({ post }: PostFormProps) => {
           <Button
             type="submit"
             className="shad-button_primary whitespace-nowrap"
+            disabled={isLoadingCreate || isLoadingUpdate}
           >
-            Submit
+            {isLoadingCreate || (isLoadingCreate && "Loading...")}
+            {action} Post
           </Button>
         </div>
       </form>
